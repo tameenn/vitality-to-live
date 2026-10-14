@@ -38,11 +38,30 @@ while True:
         print("入力してください")
     else:
         log.append({"role": "user", "content": message})
-        response = client.messages.create(
-            model="claude-haiku-5-5",
-            max_tokens=16000,
-            messages=log
-        )
+
+        try:
+            response = client.messages.create(
+                model="claude-haiku-5-5",
+                max_tokens=16000,
+                messages=log
+            )
+        except anthropic.APIConnectionError:
+            print("ネットとの接続を確認してください")
+            log.pop()
+            continue
+        except anthropic.RateLimitError:
+            print("時間が経ってからまたお試しください")
+            log.pop()
+            continue
+        except anthropic.AuthenticationError:
+            print("APIキーを確認してください")
+            log.pop()
+            continue
+        except anthropic.APIStatusError as e:
+            print("不明なエラーです.下記のエラーコードを参照してください")
+            print(e.status_code)
+            log.pop()
+            continue
 
         answer = ""
 
@@ -50,8 +69,13 @@ while True:
             if block.type == "text":
                 answer += block.text
 
+        if answer.strip() == "":
+            print("返事を受け取れませんでした")
+            log.pop()
+            continue
+        
         print(answer)
-
         log.append({"role": "assistant", "content": answer})
+        os.makedirs("data", exist_ok=True)
         with open(HISTORY_PATH, "w", encoding="utf-8") as history:
             json.dump(log, history, ensure_ascii=False, indent=2)
