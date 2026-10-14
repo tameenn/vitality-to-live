@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 from dotenv import load_dotenv
 import anthropic
 
@@ -19,7 +20,13 @@ else:
 
 client = anthropic.Anthropic()
 
-log = []
+HISTORY_PATH = "data/history.json"
+
+if os.path.exists(HISTORY_PATH):
+    with open(HISTORY_PATH, "r", encoding="utf-8") as history:
+        log = json.load(history)
+else:
+    log = []
 
 while True:
     message = input("メッセージを入力:")
@@ -46,3 +53,5 @@ while True:
         print(answer)
 
         log.append({"role": "assistant", "content": answer})
+        with open(HISTORY_PATH, "w", encoding="utf-8") as history:
+            json.dump(log, history, ensure_ascii=False, indent=2)
