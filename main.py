@@ -19,6 +19,8 @@ else:
 
 client = anthropic.Anthropic()
 
+log = []
+
 while True:
     message = input("メッセージを入力:")
     message = message.strip()
@@ -28,10 +30,11 @@ while True:
     elif message == "":
         print("入力してください")
     else:
+        log.append({"role": "user", "content": message})
         response = client.messages.create(
             model="claude-haiku-5-5",
             max_tokens=16000,
-            messages=[{"role": "user", "content": message}]
+            messages=log
         )
 
         answer = ""
@@ -41,3 +44,5 @@ while True:
                 answer += block.text
 
         print(answer)
+
+        log.append({"role": "assistant", "content": answer})
