@@ -21,12 +21,16 @@ else:
 client = anthropic.Anthropic()
 
 HISTORY_PATH = "data/history.json"
+PERSONA_PATH = "persona.md"
 
 if os.path.exists(HISTORY_PATH):
     with open(HISTORY_PATH, "r", encoding="utf-8") as history:
         log = json.load(history)
 else:
     log = []
+
+with open(PERSONA_PATH, "r", encoding="utf-8") as f:
+    persona = f.read()
 
 while True:
     message = input("メッセージを入力:")
@@ -43,7 +47,8 @@ while True:
             response = client.messages.create(
                 model="claude-haiku-5-5",
                 max_tokens=16000,
-                messages=log
+                messages=log,
+                system=persona
             )
         except anthropic.APIConnectionError:
             print("ネットとの接続を確認してください")
